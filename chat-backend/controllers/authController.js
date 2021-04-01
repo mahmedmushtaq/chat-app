@@ -18,6 +18,7 @@ exports.login = async (req, res) => {
     //  return res.send(user);
     // generate token
     const token = generateToken(user.get({ raw: true }));
+    token.user.avatar = user.avatar;
     return res.send(token);
   } catch (err) {
     res.status(500).send({ message: err.message });
@@ -29,15 +30,16 @@ exports.register = async (req, res) => {
   try {
     const user = await User.create(req.body);
     const token = generateToken(user.get({ raw: true }));
+    token.avatar = user.avatar;
     return res.send(token);
   } catch (err) {
     res.status(500).send({ message: err.message });
-  }
+  }``
   return res.send(req.body);
 };
 
 const generateToken = (user) => {
-  //  delete user.password;
-  const token = jwt.sign(user, key.appKey, { expiresIn: 86400 });
-  return { ...user, ...{ token } };
+  delete user.password;
+  const token = jwt.sign(user, key.appKey);
+  return { ...{ user }, ...{ token } };
 };
