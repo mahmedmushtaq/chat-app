@@ -3,7 +3,6 @@ import { LOGIN, REGISTER, LOGOUT, UPDATE_PROFILE } from "../types";
 
 export const login = (params) => async (dispatch) => {
   const data = await authService.login(params);
-  console.log("login is = ", data);
   dispatch({ type: LOGIN, payload: data });
   return data;
 };

@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import ChatHeader from "../ChatHeader/ChatHeader";
 import MessageBox from "../MessageBox/MessageBox";
 import MessageInput from "../MessageInput/MessageInput";
+
 import "./Messenger.scss";
 
 const Messenger = () => {
@@ -21,6 +22,7 @@ const Messenger = () => {
           <MessageBox chat={chat} />
 
           <MessageInput chat={chat} />
+
         </div>
       ) : (
         <p>No active chat</p>

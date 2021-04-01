@@ -1,6 +1,9 @@
 const socketIO = require("socket.io");
 const { sequelize } = require("../models");
+<<<<<<< HEAD
 const Message = require("../models").Message;
+=======
+>>>>>>> 9ce133aa0a30768ff4d06e8b347751f43dfe7b98
 const users = new Map();
 const userSockets = new Map();
 
@@ -56,6 +59,7 @@ const SocketServer = (server) => {
       console.log("users is = ", users);
     });
 
+<<<<<<< HEAD
     socket.on("message", async (message) => {
       let sockets = [];
 
@@ -99,6 +103,8 @@ const SocketServer = (server) => {
       }
     });
 
+=======
+>>>>>>> 9ce133aa0a30768ff4d06e8b347751f43dfe7b98
     socket.on("disconnect", async () => {
       if (userSockets.has(socket.id)) {
         const user = users.get(userSockets.get(socket.id));

@@ -1,7 +1,6 @@
 import axios from "axios";
 import store from "../store";
 import { logout } from "../store/actions/auth";
-
 const getToken = () => {
   const token = localStorage.getItem("token");
   console.log("token is = ", token);

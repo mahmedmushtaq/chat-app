@@ -7,6 +7,7 @@ import {
   FRIEND_OFFLINE,
   SET_SOCKET,
   RECEIVED_MESSAGE,
+
 } from "../actions/chat";
 
 const initialState = {

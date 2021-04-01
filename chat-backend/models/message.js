@@ -21,10 +21,17 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.TEXT,
         get() {
           const type = this.getDataValue("type");
+<<<<<<< HEAD
           const id = this.getDataValue("chatId");
           const content = this.getDataValue("message");
 
           const url = `${config.appUrl}:${config.port}`;
+=======
+          const id = this.getDataValue("id");
+          const content = this.getDataValue("message");
+
+          const url = `${config.appUrl}:${config.appPort}`;
+>>>>>>> 9ce133aa0a30768ff4d06e8b347751f43dfe7b98
           return type === "text" ? content : `${url}/chat/${id}/${content}`;
         },
       },
