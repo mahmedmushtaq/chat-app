@@ -1,3 +1,4 @@
+const { check } = require("express-validator");
 const { Op } = require("sequelize");
 const { sequelize } = require("../models");
 const model = require("../models");
@@ -29,7 +30,7 @@ exports.Index = async (req, res) => {
                 model: User,
               },
             ],
-            limit: 20,
+            limit: 15,
             order: [["id", "DESC"]],
           },
         ],
@@ -80,26 +81,39 @@ exports.create = async (req, res) => {
 
     await t.commit();
 
-    const chatNew = await Chat.findOne({
-      where: {
-        id: chat.id,
-      },
-      include: [
-        {
-          model: User,
-          where: {
-            [Op.not]: {
-              id: req.user.id,
-            },
-          },
-        },
-        {
-          model: Message,
-        },
-      ],
-    });
+    // const chatNew = await Chat.findOne({
+    //   where: {
+    //     id: chat.id,
+    //   },
+    //   include: [
+    //     {
+    //       model: User,
+    //       where: {
+    //         [Op.not]: {
+    //           id: req.user.id,
+    //         },
+    //       },
+    //     },
+    //     {
+    //       model: Message,
+    //     },
+    //   ],
+    // });
 
-    return res.send(chatNew);
+    const creator = await User.findOne({ where: { id: req.user.id } });
+    const partner = await User.findOne({ where: { id: partnerId } });
+    const forCreator = {
+      id: chat.id,
+      type: "dual",
+      Users: [partner],
+      Messages: [],
+    };
+    const forReceiver = {
+      ...forCreator,
+      Users: [creator],
+    };
+
+    return res.send([forCreator, forReceiver]);
   } catch (err) {
     await t.rollback();
     return res.status(500).send({ status: "Error", message: err.message });
@@ -163,7 +177,6 @@ exports.deleteChat = async (req, res) => {
     return res.status(500).json({ status: "Error", message: e.message });
   }
 };
-<<<<<<< HEAD
 
 exports.imageUpload = (req, res) => {
   if (req.file) {
@@ -172,5 +185,98 @@ exports.imageUpload = (req, res) => {
 
   return res.status(500).send({ error: "No image is uploaded" });
 };
-=======
->>>>>>> 9ce133aa0a30768ff4d06e8b347751f43dfe7b98
+
+exports.addUserToGroup = async (req, res) => {
+  try {
+    const { chatId, userId } = req.body;
+
+    const chat = await Chat.findOne({
+      where: { id: chatId },
+      include: [
+        { model: User },
+        {
+          model: Message,
+          include: [{ model: User }],
+          limit: 20,
+          order: [["id", "DESC"]],
+        },
+      ],
+    });
+
+    chat.Messages.reverse();
+    // check user is already in the group
+
+    chat.Users.forEach((user) => {
+      if (user.id === userId) {
+        return res
+          .status(403)
+          .send({ message: "User already is present in the chat" });
+      }
+    });
+
+    await ChatUser.create({ chatId, userId });
+
+    const newChatter = await User.findOne({ where: { id: userId } });
+
+    if (chat.type === "dual") {
+      chat.type = "group";
+      await chat.save();
+    }
+
+    return res.send({ chat, newChatter });
+  } catch (err) {
+    return res.status(500).json({ status: "Error", message: err.message });
+  }
+};
+
+exports.leaveCurrentChat = async (req, res) => {
+  try {
+    const { chatId } = req.body;
+    const chat = await Chat.findOne({
+      where: {
+        id: chatId,
+      },
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    if (chat.Users.length === 2) {
+      return res
+        .status(403)
+        .json({ status: "Error", message: "You cannot leave this chat" });
+    }
+
+    if (chat.Users.length === 3) {
+      chat.type = "dual";
+      chat.save();
+    }
+
+    await ChatUser.destroy({
+      where: {
+        chatId,
+        userId: req.user.id,
+      },
+    });
+
+    await Message.destroy({
+      where: {
+        chatId,
+        fromUserId: req.user.id,
+      },
+    });
+
+    const notifyUsers = chat.Users.map((user) => user.id);
+
+    return res.json({
+      chatId: chat.id,
+      userId: req.user.id,
+      currentUserId: req.user.id,
+      notifyUsers,
+    });
+  } catch (e) {
+    return res.status(500).json({ status: "Error", message: e.message });
+  }
+};

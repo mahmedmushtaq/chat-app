@@ -10,7 +10,7 @@ import { setCurrentChat } from "../../../../store/actions/chat";
 const FriendList = () => {
   const dispatch = useDispatch();
   const chats = useSelector((state) => state.chatReducer.chats);
-  // const socket = useSelector(state => state.chatReducer.socket)
+  const socket = useSelector((state) => state.chatReducer.socket);
 
   const [showFriendsModal, setShowFriendsModal] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
@@ -23,13 +23,11 @@ const FriendList = () => {
     ChatService.searchUsers(e.target.value).then((res) => setSuggestions(res));
   };
 
-  // const addNewFriend = (id) => {
-  //     ChatService.createChat(id)
-  //         .then(chats => {
-  //             socket.emit('add-friend', chats)
-  //             setShowFriendsModal(false)
-  //         }).catch(err => console.log(err))
-  // }
+  const addNewFriend = async (id) => {
+    const chats = await ChatService.createChat(id);
+    socket.emit("add-friend", chats);
+    setShowFriendsModal(false);
+  };
 
   return (
     <div id="friends" className="shadow-light">
@@ -58,22 +56,24 @@ const FriendList = () => {
           </Fragment>
 
           <Fragment key="body">
-            {/* <p>Find friends by typing their name bellow</p>
-                        <input
-                            onInput={e => searchFriends(e)}
-                            type='text'
-                            placeholder='Search...'
-                        />
-                        <div id='suggestions'>
-                            {
-                                suggestions.map(user => {
-                                    return <div key={user.id} className='suggestion'>
-                                        <p className='m-0'>{user.firstName} {user.lastName}</p>
-                                        <button onClick={() => addNewFriend(user.id)}>ADD</button>
-                                    </div>
-                                })
-                            }
-                        </div> */}
+            <p>Find friends by typing their name bellow</p>
+            <input
+              onInput={(e) => searchFriends(e)}
+              type="text"
+              placeholder="Search..."
+            />
+            <div id="suggestions">
+              {suggestions.map((user) => {
+                return (
+                  <div key={user.id} className="suggestion">
+                    <p className="m-0">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <button onClick={() => addNewFriend(user.id)}>ADD</button>
+                  </div>
+                );
+              })}
+            </div>
           </Fragment>
         </Modal>
       )}
